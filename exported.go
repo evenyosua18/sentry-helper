@@ -117,6 +117,39 @@ func StartChild(ctx context.Context, request ...interface{}) *sentry.Span {
 	return sp
 }
 
+func StartSpan(c interface{}, request ...interface{}) *sentry.Span {
+	if c == nil {
+		return nil
+	}
+
+	// usual context
+	if ctx, ok := c.(context.Context); ok {
+		// spanContextKey is used to store span values in contexts.
+		type spanContextKey struct{}
+		hasParent := false
+
+		if ctx.Value(spanContextKey{}) != nil {
+			var spParent *sentry.Span
+			if spParent, hasParent = ctx.Value(spanContextKey{}).(*sentry.Span); spParent == nil {
+				hasParent = false
+			}
+		}
+
+		if hasParent {
+			// start child
+			StartChild(ctx, request...)
+		} else {
+			// start parent
+			StartParent(ctx)
+		}
+	} else {
+		// call StartParent function
+		StartParent(c)
+	}
+
+	return nil
+}
+
 func LogError(sp *sentry.Span, err error, status int) {
 	sp.Status = sentry.SpanStatus(status)
 

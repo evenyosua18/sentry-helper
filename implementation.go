@@ -23,11 +23,27 @@ func (h *Helper) LogObject(span interface{}, name string, obj interface{}) {
 }
 
 func (h *Helper) StartParent(ctx interface{}) interface{} {
+	if h.dsn == "" {
+		return nil
+	}
+
 	return StartParent(ctx)
 }
 
 func (h *Helper) StartChild(ctx context.Context, request ...interface{}) interface{} {
+	if h.dsn == "" {
+		return nil
+	}
+
 	return StartChild(ctx, request)
+}
+
+func (h *Helper) StartSpan(ctx interface{}, request ...interface{}) interface{} {
+	if h.dsn == "" {
+		return nil
+	}
+
+	return StartSpan(ctx, request...)
 }
 
 func (h *Helper) Close(span interface{}) {
